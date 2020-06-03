@@ -60,7 +60,7 @@ class Bendigobank
     html.css("ol.grouped-list grouped-list--compact grouped-list--indent li").each do |li|
       date = html.at_css("h3[data-semantic='activity-group-heading']").text
       description = html.at_css("h2[data-semantic='transaction-title']").text
-      amount =html.at_css("span.amount.debit").text
+      amount = html.at_css("span.amount.debit").text
 
       transaction = Transaction.new(date, description, amount ) # create account here
       @transactions << transaction
