@@ -1,4 +1,5 @@
-require 'watir'
+# frozen_string_literal: true
+
 require_relative 'transaction'
 
 # Stores data related to a single account.
