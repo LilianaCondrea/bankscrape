@@ -2,32 +2,35 @@
 
 require 'watir'
 require 'nokogiri'
+require 'json'
 require 'pry'
 require_relative 'account'
 require_relative 'transaction'
 
-# Operate over a bank account.
+# class operates over a bank account.
 
 class Bendigobank
+
+   @browser = Watir::Browser.new(:chrome, 'goog:chromeOptions' => { detach: true })
+
+
   def execute
-    login
-    fetch_accounts
-    fetch_transactions
-    show_result
+   connect
+   fetch_accounts
+   fetch_transactions
+   show_result
   end
 
-  def login
-    # here you log in to the bank
-    browser = Watir::Browser.new(:chrome, 'goog:chromeOptions' => { detach: true })
-    browser.goto('https://demo.bendigobank.com.au')
-    # sign in script
-    browser.button(:tabindex => "4", :class => "input_submit",
-      :name => "customer_type",:value =>"personal").click
+  binding.pry
+  def connect
+    @browser.goto 'https://demo.bendigobank.com.au'
+    @browser.button(css: '.input_submit').click
   end
 
   def fetch_accounts
   # fetch html data using nokogiri, take only fragment of html.
-  html = Nokogiri::HTML.fragment(browser.div(class: 'accounts-list').html)
+  html = Nokogiri::HTML.fragment(@browser.div(class: 'accounts-list').html)
+  puts html
   parse_accounts(html)
   end
 
@@ -45,26 +48,30 @@ class Bendigobank
 
   def parse_accounts(html)
     # Iterate accounts unsing css selectors
-    html.css('ol.grouped-list__group__items li').each do |li|
-      name = html.at_css("h6[data-semantic='account-group-heading']").text
-      balance = html.at_css("span[data-semantic='available-balance']").text
-      currency =html.at_css("span[data-semantic='available-balance'][0]").text
-      nature = html.at_css("div._3jAwGcZ7sr _5KR4Am_fPD").text
-
-      account = Account.new(name, balance, currency, nature ) # create account here
+    html.css('ol.grouped-list__group__items li').each do |html|
+      name = html.at_css('h6[data-semantic="account-group-heading"]')
+      balance = html.at_css('span[data-semantic="available-balance"]')
+      currency =html.at_css('span[data-semantic="available-balance"][0]')
+      nature = html.at_css('div._3jAwGcZ7sr _5KR4Am_fPD')
+      transaction = []
+      account = Account.new(name, balance, currency, nature, transactions ) # create account here
       @accounts << account # add to accounts array
     end
   end
 
   def parse_transactions(account, html)
     # parse transactions here
-    html.css('ol.grouped-list grouped-list--compact grouped-list--indent li').each do |li|
-      date = html.at_css('h3[data-semantic='activity-group-heading']').text
-      description = html.at_css('h2[data-semantic='transaction-title']').text
-      amount = html.at_css('span.amount.debit').text
+    html.css('ol.grouped-list grouped-list--compact grouped-list--indent li').each do |html|
+      date = html.at_css('h3[data-semantic="activity-group-heading"]')
+      description = html.at_css('h2[data-semantic="transaction-title"]')
+      amount = html.at_css('span.amount.debit')
 
       transaction = Transaction.new(date, description, amount) # create account here
       @transactions << transaction
     end
+  end
+
+  def show_result
+     
   end
 end
