@@ -4,7 +4,7 @@ require_relative 'transaction'
 
 # Stores data related to a single account.
 #
-class Account
+class Accounts
   attr_reader :name, :balance, :currency, :nature, :transactions
 
   def initialize(name, balance, currency, nature)
@@ -12,7 +12,7 @@ class Account
     @balance = balance
     @currency = currency
     @nature = nature
-    @transactions = Transactions.new
+    @transactions = Transactions.new(@date,  @description, @amount,  @currency, @account_name )
   end
 
   def to_s
