@@ -12,7 +12,7 @@ class Accounts
     @balance = balance
     @currency = currency
     @nature = nature
-    @transactions = Transactions.new(@date,  @description, @amount,  @currency, @account_name )
+    @transactions = Transactions.new
   end
 
   def to_s
