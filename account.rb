@@ -1,28 +1,17 @@
-# frozen_string_literal: true
+class Accounts
+  attr_accessor :name, :currency, :balance, :nature, :transactions
 
-require_relative 'transaction'
-
-# Stores data related to a single account.
-#
-class Account
-  attr_reader :name, :balance, :currency, :nature, :transactions
-
-  def initialize(name, balance, currency, nature)
+  def initialize(name,currency,balance,nature,transactions)
     @name = name
-    @balance = balance
     @currency = currency
+    @balance = balance
     @nature = nature
-    @transactions = Transactions.new
-  end
-
-  def to_s
-    to_hash.to_s
+    @transactions = transactions
   end
 
   def to_hash
-    {
-      name: @name, balance: @balance, currency: @currency, nature: @nature,
-      transactions: @transactions.to_hash
-    }
+    hash = {}
+    instance_variables.each { |var| hash[var.to_s.delete('@')] = instance_variable_get(var) }
+    hash
   end
 end

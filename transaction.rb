@@ -2,7 +2,7 @@
 
 # Class stores data related to a single transaction.
 
-class Transaction
+class Transactions
   attr_reader :date, :description, :amount, :currency, :account_name
 
   def initialize(date, description, amount, currency, account_name)
