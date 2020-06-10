@@ -11,20 +11,19 @@ require_relative 'transaction'
 
 class Bendigobank
 
-  def initialize( account )
-    @accounts = ['name' => name , 'balance' => balance, 'currency' => currency, 'nature' => nature, 'transactions' => transactions]
+  def initialize( )
+  @accounts = []
   end
 
   def execute
    connect
    fetch_accounts
-   #fetch_transactions
-
-    close
+   fetch_transactions
+   JSON.pretty_generate({"accounts": @accounts})
   end
 
   BANK_URL='https://demo.bendigobank.com.au'
-  binding.pry
+  #binding.pry
   def connect
     @browser = Watir::Browser.new(:chrome)
     @browser.goto(BANK_URL)
@@ -36,11 +35,12 @@ class Bendigobank
   parse_accounts(html)
   end
 
-    #def fetch_transactions
-    #@accounts.each do |account|
-
-      #end
-    #end
+    def fetch_transactions
+    @accounts.each do |account|
+      now = Date.today
+      months_ago = (now - 60)
+      end
+    end
 
     def parse_transactions(account, html)
       date = html.at_css("h3").text
@@ -60,14 +60,8 @@ class Bendigobank
       currency = 'USD'
       nature = 'credit card'
       transactions = Transactions.new( date,  description, amount,  currency, account_name )
-      #account = Account.new(name, balance, currency, nature , transactions )
       @accounts = ['name' => name , 'balance' => balance, 'currency' => currency, 'nature' => nature, 'transactions' => transactions]
     end
-    JSON.pretty_generate({"accounts": @accounts})
-  end
-
-  def close
-  @browser.close
   end
 
   example = Bendigobank.new
