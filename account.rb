@@ -7,16 +7,13 @@ require_relative 'transaction'
 class Account
   attr_reader :name, :balance, :currency, :nature, :transactions
 
-  def initialize(name, balance, currency, nature)
+  def initialize(name, balance, currency, nature, transactions)
     @name = name
     @balance = balance
     @currency = currency
     @nature = nature
-    @transactions = Transactions.new
-  end
-
-  def to_s
-    to_hash.to_s
+    @transactions = transactions
+    transactions = Transactions.new(date,  description, amount,  currency, account_name)
   end
 
   def to_hash
@@ -24,5 +21,9 @@ class Account
       name: @name, balance: @balance, currency: @currency, nature: @nature,
       transactions: @transactions.to_hash
     }
+  end
+
+  def to_s
+    to_hash.to_s
   end
 end

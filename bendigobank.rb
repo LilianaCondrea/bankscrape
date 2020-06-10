@@ -2,69 +2,68 @@
 
 require 'watir'
 require 'nokogiri'
+require 'json'
 require 'pry'
 require_relative 'account'
 require_relative 'transaction'
 
-# Operate over a bank account.
+# class operates over a bank account.
 
 class Bendigobank
-  def execute
-    login
-    fetch_accounts
-    fetch_transactions
-    show_result
+
+  def initialize( )
+  @accounts = []
   end
 
-  def login
-    # here you log in to the bank
-    browser = Watir::Browser.new(:chrome, 'goog:chromeOptions' => { detach: true })
-    browser.goto('https://demo.bendigobank.com.au')
-    # sign in script
-    browser.button(:tabindex => "4", :class => "input_submit",
-      :name => "customer_type",:value =>"personal").click
+  def execute
+   connect
+   fetch_accounts
+   fetch_transactions
+   JSON.pretty_generate({"accounts": @accounts})
+  end
+
+  BANK_URL='https://demo.bendigobank.com.au'
+  #binding.pry
+  def connect
+    @browser = Watir::Browser.new(:chrome)
+    @browser.goto(BANK_URL)
+    @browser.button(value: 'personal').click
   end
 
   def fetch_accounts
-  # fetch html data using nokogiri, take only fragment of html.
-  html = Nokogiri::HTML.fragment(browser.div(class: 'accounts-list').html)
+  html = Nokogiri::HTML.fragment(@browser.div(class: "content__wrapper").html)
   parse_accounts(html)
   end
 
-  def fetch_transactions
-  @accounts.each do |account|
-    two_months_ago = (Date.today - 60).strftime('%d/%m/%Y')
-    today = Date.today.strftime('%d/%m/%Y')
-    StatementPage.new(@browser)
-                 .fetch_transactions_into(@accounts,
-                                          from_date: two_months_ago,
-                                          to_date: today)
-    parse_transactions(account, html)
+    def fetch_transactions
+    @accounts.each do |account|
+      now = Date.today
+      months_ago = (now - 60)
+      end
     end
-  end
+
+    def parse_transactions(account, html)
+      date = html.at_css("h3").text
+      description = 'transaction'
+      amount = (html.at_css('span.amount.debit').text).gsub(/[^\d^.]/, '').to_f
+      currency = 'USD'
+      account_name = html.at_css("h6").text
+      transactions = ['date' => date , 'description' => description, 'amount' => amount, 'currency' => currency, 'account_name' => account_name]
+      @transactions << transactions
+    end
 
   def parse_accounts(html)
     # Iterate accounts unsing css selectors
-    html.css('ol.grouped-list__group__items li').each do |li|
-      name = html.at_css("h6[data-semantic='account-group-heading']").text
-      balance = html.at_css("span[data-semantic='available-balance']").text
-      currency =html.at_css("span[data-semantic='available-balance'][0]").text
-      nature = html.at_css("div._3jAwGcZ7sr _5KR4Am_fPD").text
-
-      account = Account.new(name, balance, currency, nature ) # create account here
-      @accounts << account # add to accounts array
+    html.css('ol.grouped-list grouped-list--compact grouped-list--indent li').each do |html|
+      name  = html.css("h6")[0].text
+      balance = html.at_css('dd span[aria-label]').text.gsub(/[^\d^.]/, '').to_f
+      currency = 'USD'
+      nature = 'credit card'
+      transactions = Transactions.new( date,  description, amount,  currency, account_name )
+      @accounts = ['name' => name , 'balance' => balance, 'currency' => currency, 'nature' => nature, 'transactions' => transactions]
     end
   end
 
-  def parse_transactions(account, html)
-    # parse transactions here
-    html.css('ol.grouped-list grouped-list--compact grouped-list--indent li').each do |li|
-      date = html.at_css('h3[data-semantic='activity-group-heading']').text
-      description = html.at_css('h2[data-semantic='transaction-title']').text
-      amount = html.at_css('span.amount.debit').text
-
-      transaction = Transaction.new(date, description, amount) # create account here
-      @transactions << transaction
-    end
-  end
+  example = Bendigobank.new
+  example.execute
 end
