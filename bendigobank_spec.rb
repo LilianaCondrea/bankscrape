@@ -5,9 +5,11 @@ require 'json'
 require 'nokogiri'
 require_relative 'account'
 describe Bendigobank do
-  html     = Nokogiri::HTML(File.read('accounts.html','transactions.html'))
-  accounts = Bendigobank.parse_accounts(html)
-  transactions = Bendigobank.parse_transactions(account, html)
+    html_account = Nokogiri::HTML(File.read('accounts.html'))
+    html_transaction = Nokogiri::HTML(File.read('transactions.html'))
+
+    accounts = Bendigobank.parse_accounts(html_account)
+    transactions = Bendigobank.parse_transactions(html_transaction,"account_name")
 
   describe "#parse_accounts" do
     it 'show example for account object' do
