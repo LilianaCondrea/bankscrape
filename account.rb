@@ -4,7 +4,7 @@ require_relative 'transaction'
 
 # Stores data related to a single account.
 #
-class Account
+class Accounts
   attr_reader :name, :balance, :currency, :nature, :transactions
 
   def initialize(name, balance, currency, nature, transactions)
@@ -17,10 +17,11 @@ class Account
   end
 
   def to_hash
-    {
+    hash{
       name: @name, balance: @balance, currency: @currency, nature: @nature,
       transactions: @transactions.to_hash
     }
+    instance_variables.each { |var| hash[var.to_s.delete('@')] = instance_variable_get(var) }
   end
 
   def to_s
